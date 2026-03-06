@@ -105,6 +105,27 @@ async def save_job_posting(
     )
 
 
+@mcp.tool()
+def mock_interview(
+    company: str,
+    interview_type: str = "behavioral",
+    workspace_dir: str | None = None,
+) -> dict:
+    """Start a mock interview session. Returns a briefing with all application materials,
+    your profile, and interviewer guidance so Claude can play the interviewer role.
+
+    After the session, save feedback and areas to improve using save_application_file
+    with file_type="interview_prep".
+
+    Args:
+        company: Company name
+        interview_type: One of: behavioral, technical, culture, manager
+    """
+    return workspace.mock_interview_briefing(
+        _config(workspace_dir), company, interview_type
+    )
+
+
 def main():
     mcp.run(transport="stdio")
 

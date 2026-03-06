@@ -164,3 +164,84 @@ async def save_job_posting(
         raise WorkspaceError("Must provide either url or content")
 
     return save_application_file(config, company, "job_posting", text)
+
+
+INTERVIEW_TYPES = {
+    "behavioral": {
+        "description": "Behavioral interview focusing on past experiences, teamwork, conflict resolution, and leadership using the STAR method.",
+        "guidance": (
+            "Ask behavioral questions using the STAR method (Situation, Task, Action, Result). "
+            "Probe for specifics — don't let the candidate stay vague. Ask follow-ups like "
+            "'What was YOUR specific role?' and 'What would you do differently?' "
+            "Cover: teamwork, conflict, failure, leadership, ambiguity. "
+            "Tailor questions to the seniority level and role described in the job posting."
+        ),
+    },
+    "technical": {
+        "description": "Technical interview covering system design, coding concepts, and architecture relevant to the role.",
+        "guidance": (
+            "Ask technical questions matched to the role's tech stack and seniority. "
+            "Start with a warm-up concept question, then move to a design or coding problem. "
+            "Ask the candidate to talk through their thinking. Probe trade-offs: "
+            "'Why that approach over X?' Push on scalability, error handling, edge cases. "
+            "For senior roles, focus on architecture and system design over syntax."
+        ),
+    },
+    "culture": {
+        "description": "Culture fit and values interview exploring alignment with company mission and team dynamics.",
+        "guidance": (
+            "Ask questions that explore alignment with the company's mission and values. "
+            "Use the company research to reference specific initiatives or cultural traits. "
+            "Probe: 'Why this company?', 'What work environment do you thrive in?', "
+            "'How do you approach disagreements on technical direction?' "
+            "Look for genuine enthusiasm and specific knowledge of the company."
+        ),
+    },
+    "manager": {
+        "description": "Hiring manager interview covering role fit, career goals, and mutual expectations.",
+        "guidance": (
+            "Act as the hiring manager for this role. Ask about: motivation for applying, "
+            "relevant experience, what success looks like in the first 90 days, career goals, "
+            "and questions the candidate has about the team. Be conversational but evaluative. "
+            "Probe gaps between the candidate's experience and the job requirements. "
+            "End by asking what questions they have for you — and answer them in character."
+        ),
+    },
+}
+
+
+def mock_interview_briefing(
+    config: WorkspaceConfig, company: str, interview_type: str = "behavioral"
+) -> dict:
+    """Assemble a mock interview briefing from application materials and profile."""
+    if interview_type not in INTERVIEW_TYPES:
+        raise WorkspaceError(
+            f"Invalid interview type: {interview_type}. "
+            f"Must be one of: {', '.join(sorted(INTERVIEW_TYPES))}"
+        )
+
+    company_dir = config.workspace_dir / _sanitize_company(company)
+    if not company_dir.exists():
+        raise WorkspaceError(f"No application found for: {company}")
+
+    # Gather available materials
+    materials = {}
+    for f in sorted(company_dir.iterdir()):
+        if f.is_file() and f.suffix == ".md":
+            materials[f.stem] = f.read_text()
+
+    if "job_posting" not in materials:
+        raise WorkspaceError(
+            f"No job posting found for {company}. Save one first with save_job_posting."
+        )
+
+    interview = INTERVIEW_TYPES[interview_type]
+
+    return {
+        "interview_type": interview_type,
+        "interview_description": interview["description"],
+        "interviewer_guidance": interview["guidance"],
+        "company": company_dir.name,
+        "profile": get_profile(),
+        "materials": materials,
+    }

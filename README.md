@@ -58,6 +58,7 @@ PEOPLE_WORKSPACE=/tmp/test-workspace uv run mcp dev src/people_mcp/server.py
 | `delete_application` | Remove an entire application directory |
 | `fetch_url` | Fetch a URL, return text with HTML stripped |
 | `save_job_posting` | Fetch URL or accept pasted text, save as job posting |
+| `mock_interview` | Start a mock interview — returns briefing for Claude to play interviewer |
 
 ## Workspace Layout
 

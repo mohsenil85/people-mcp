@@ -1,10 +1,8 @@
 # people-mcp
 
-MCP server for managing job application materials. Reads your resume from the workspace, fetches job postings and company info, compiles LaTeX resumes, and persists research, strategies, and interview prep per company.
+MCP server for managing job application materials. Reads your resume from the workspace, fetches job postings and company info, compiles LaTeX resumes, and persists research, strategies, and interview prep per company. The host Claude does all reasoning — this server handles data access and persistence.
 
-The host Claude does all reasoning — this server handles data access and persistence.
-
-## Setup
+## Quickstart
 
 Requires Python 3.14+ and [uv](https://docs.astral.sh/uv/).
 
@@ -14,17 +12,7 @@ cd people-mcp
 uv sync
 ```
 
-Set the workspace directory to your resume project:
-
-```bash
-export PEOPLE_WORKSPACE=~/Projects/resume
-```
-
-## Usage
-
-### Claude Code
-
-Add to your Claude Code MCP config (`~/.claude/settings.json`):
+Add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -38,12 +26,6 @@ Add to your Claude Code MCP config (`~/.claude/settings.json`):
     }
   }
 }
-```
-
-### MCP Inspector
-
-```bash
-PEOPLE_WORKSPACE=~/Projects/resume uv run mcp dev src/people_mcp/server.py
 ```
 
 ## Tools
@@ -63,32 +45,25 @@ PEOPLE_WORKSPACE=~/Projects/resume uv run mcp dev src/people_mcp/server.py
 
 ## Workspace Layout
 
-Point `$PEOPLE_WORKSPACE` at your resume project. The root contains the base resume, and each company gets a subdirectory with tailored materials:
-
 ```
 $PEOPLE_WORKSPACE/
 ├── resume.tex              # Base resume (used by get_profile)
 ├── coverletter.txt         # Base cover letter
 ├── META.md                 # Base strategy
-├── Makefile
-├── deel/
+├── stripe/
 │   ├── resume.tex          # Tailored resume
 │   ├── coverletter.txt     # Tailored cover letter
 │   ├── META.md             # Application strategy
 │   └── job_posting.md      # Saved job posting
-├── gusto/
-│   └── ...
-└── rippling/
+└── anthropic/
     └── ...
 ```
 
-Any file can be stored in a company directory — there is no whitelist. Binary/build artifacts (`.aux`, `.log`, `.out`, `.pdf`) are skipped in listings.
+Any file can be stored in a company directory — there is no whitelist. Build artifacts (`.aux`, `.log`, `.out`, `.pdf`, `.gz`, `.fls`, `.fdb_latexmk`) are skipped in listings.
 
-## How It Works
+## Documentation
 
-- **Profile** is read from `resume.tex` at the workspace root — your single source of truth
-- **Company names** are sanitized to `[a-z0-9_-]` for safe directory names ("Jane Street" becomes `jane-street`)
-- **Filenames** are validated to prevent path traversal (no `/`, `\`, `..`, or dotfiles)
-- **HTML stripping** uses regex — no external parsing deps; Claude interprets the output fine
-- **HTTP** uses httpx for async fetching with redirects and a 30s timeout
-- **LaTeX compilation** runs `lualatex` via asyncio subprocess
+- **[Tutorial](docs/tutorial.md)** — Walk through a complete application workflow end-to-end
+- **[How-To Guides](docs/how-to.md)** — Focused recipes for specific tasks
+- **[Reference](docs/reference.md)** — Complete tool parameters, return values, and internals
+- **[Explanation](docs/explanation.md)** — Architecture decisions and design rationale

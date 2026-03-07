@@ -3,10 +3,31 @@
 import asyncio
 import os
 import re
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TypedDict
 
 import httpx
+
+
+class ApplicationSummary(TypedDict):
+    company: str
+    files: list[str]
+
+
+class ApplicationDetail(TypedDict):
+    company: str
+    files: dict[str, str]
+
+
+class InterviewBriefing(TypedDict):
+    interview_type: str
+    interview_description: str
+    interviewer_guidance: str
+    company: str
+    profile: str
+    materials: dict[str, str]
 
 # Binary/build artifacts to skip in listings
 SKIP_EXTENSIONS = frozenset({".aux", ".log", ".out", ".pdf", ".gz", ".fls", ".fdb_latexmk"})
@@ -60,13 +81,13 @@ def get_profile(config: WorkspaceConfig) -> str:
     return resume_path.read_text()
 
 
-def list_applications(config: WorkspaceConfig) -> list[dict]:
+def list_applications(config: WorkspaceConfig) -> list[ApplicationSummary]:
     """List all application directories with their files."""
     workspace = config.workspace_dir
     if not workspace.exists():
         return []
 
-    applications = []
+    applications: list[ApplicationSummary] = []
     for entry in sorted(workspace.iterdir()):
         if not entry.is_dir() or entry.name.startswith("."):
             continue
@@ -81,17 +102,17 @@ def list_applications(config: WorkspaceConfig) -> list[dict]:
     return applications
 
 
-def get_application(config: WorkspaceConfig, company: str) -> dict:
+def get_application(config: WorkspaceConfig, company: str) -> ApplicationDetail:
     """Get all text file content for one application."""
     company_dir = config.workspace_dir / _sanitize_company(company)
     if not company_dir.exists():
         raise WorkspaceError(f"No application found for: {company}")
 
-    content = {}
+    content: dict[str, str] = {}
     for f in sorted(company_dir.iterdir()):
         if f.is_file() and f.suffix in TEXT_EXTENSIONS:
             content[f.name] = f.read_text()
-    return {"company": company_dir.name, "files": content}
+    return ApplicationDetail(company=company_dir.name, files=content)
 
 
 def read_application_file(config: WorkspaceConfig, company: str, filename: str) -> str:
@@ -120,8 +141,6 @@ def delete_application(config: WorkspaceConfig, company: str) -> str:
     company_dir = config.workspace_dir / _sanitize_company(company)
     if not company_dir.exists():
         raise WorkspaceError(f"No application found for: {company}")
-
-    import shutil
 
     shutil.rmtree(company_dir)
     return f"Deleted application: {company_dir.name}"
@@ -254,7 +273,7 @@ INTERVIEW_TYPES = {
 
 def mock_interview_briefing(
     config: WorkspaceConfig, company: str, interview_type: str = "behavioral"
-) -> dict:
+) -> InterviewBriefing:
     """Assemble a mock interview briefing from application materials and profile."""
     if interview_type not in INTERVIEW_TYPES:
         raise WorkspaceError(
@@ -267,7 +286,7 @@ def mock_interview_briefing(
         raise WorkspaceError(f"No application found for: {company}")
 
     # Gather all text materials
-    materials = {}
+    materials: dict[str, str] = {}
     for f in sorted(company_dir.iterdir()):
         if f.is_file() and f.suffix in TEXT_EXTENSIONS:
             materials[f.name] = f.read_text()
@@ -279,11 +298,11 @@ def mock_interview_briefing(
 
     interview = INTERVIEW_TYPES[interview_type]
 
-    return {
-        "interview_type": interview_type,
-        "interview_description": interview["description"],
-        "interviewer_guidance": interview["guidance"],
-        "company": company_dir.name,
-        "profile": get_profile(config),
-        "materials": materials,
-    }
+    return InterviewBriefing(
+        interview_type=interview_type,
+        interview_description=interview["description"],
+        interviewer_guidance=interview["guidance"],
+        company=company_dir.name,
+        profile=get_profile(config),
+        materials=materials,
+    )

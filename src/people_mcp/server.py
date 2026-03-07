@@ -1,5 +1,7 @@
 """FastMCP server for job application workspace management."""
 
+from pathlib import Path
+
 from mcp.server.fastmcp import FastMCP
 
 from people_mcp import workspace
@@ -9,7 +11,6 @@ mcp = FastMCP("people")
 
 def _config(workspace_dir: str | None = None) -> workspace.WorkspaceConfig:
     if workspace_dir:
-        from pathlib import Path
         return workspace.WorkspaceConfig(workspace_dir=Path(workspace_dir))
     return workspace.WorkspaceConfig.from_env()
 
@@ -21,7 +22,7 @@ def get_profile(workspace_dir: str | None = None) -> str:
 
 
 @mcp.tool()
-def list_applications(workspace_dir: str | None = None) -> list[dict]:
+def list_applications(workspace_dir: str | None = None) -> list[workspace.ApplicationSummary]:
     """List all job application directories with their files.
 
     Each application directory may contain resume.tex, coverletter.txt, META.md,
@@ -31,7 +32,7 @@ def list_applications(workspace_dir: str | None = None) -> list[dict]:
 
 
 @mcp.tool()
-def get_application(company: str, workspace_dir: str | None = None) -> dict:
+def get_application(company: str, workspace_dir: str | None = None) -> workspace.ApplicationDetail:
     """Get all text file content for one application.
 
     Args:
@@ -124,7 +125,7 @@ def mock_interview(
     company: str,
     interview_type: str = "behavioral",
     workspace_dir: str | None = None,
-) -> dict:
+) -> workspace.InterviewBriefing:
     """Start a mock interview session. Returns a briefing with all application materials,
     your profile, and interviewer guidance so Claude can play the interviewer role.
 

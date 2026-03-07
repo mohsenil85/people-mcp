@@ -5,6 +5,7 @@ __pycache__/
 dist/
 build/
 .env
+.coverage
 .pytest_cache/
 *.aux
 *.log

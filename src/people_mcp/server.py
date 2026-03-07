@@ -15,23 +15,24 @@ def _config(workspace_dir: str | None = None) -> workspace.WorkspaceConfig:
 
 
 @mcp.tool()
-def get_profile() -> str:
-    """Return the professional profile (resume summary, skills, experience)."""
-    return workspace.get_profile()
+def get_profile(workspace_dir: str | None = None) -> str:
+    """Return the professional profile by reading resume.tex from the workspace root."""
+    return workspace.get_profile(_config(workspace_dir))
 
 
 @mcp.tool()
 def list_applications(workspace_dir: str | None = None) -> list[dict]:
-    """List all job application directories with their file status.
+    """List all job application directories with their files.
 
-    Each application may contain: job_posting, company_research, strategy, interview_prep, notes.
+    Each application directory may contain resume.tex, coverletter.txt, META.md,
+    job_posting.md, and any other research or strategy documents.
     """
     return workspace.list_applications(_config(workspace_dir))
 
 
 @mcp.tool()
 def get_application(company: str, workspace_dir: str | None = None) -> dict:
-    """Get all content for one application.
+    """Get all text file content for one application.
 
     Args:
         company: Company name (e.g. "stripe", "Anthropic")
@@ -41,29 +42,29 @@ def get_application(company: str, workspace_dir: str | None = None) -> dict:
 
 @mcp.tool()
 def read_application_file(
-    company: str, file_type: str, workspace_dir: str | None = None
+    company: str, filename: str, workspace_dir: str | None = None
 ) -> str:
     """Read a single file from an application directory.
 
     Args:
         company: Company name
-        file_type: One of: job_posting, company_research, strategy, interview_prep, notes
+        filename: Name of the file to read (e.g. "resume.tex", "META.md", "job_posting.md")
     """
-    return workspace.read_application_file(_config(workspace_dir), company, file_type)
+    return workspace.read_application_file(_config(workspace_dir), company, filename)
 
 
 @mcp.tool()
 def save_application_file(
-    company: str, file_type: str, content: str, workspace_dir: str | None = None
+    company: str, filename: str, content: str, workspace_dir: str | None = None
 ) -> str:
     """Save or update a file in an application directory.
 
     Args:
         company: Company name
-        file_type: One of: job_posting, company_research, strategy, interview_prep, notes
-        content: Markdown content to save
+        filename: Name of the file to save (e.g. "notes.md", "company_research.md")
+        content: Content to save
     """
-    return workspace.save_application_file(_config(workspace_dir), company, file_type, content)
+    return workspace.save_application_file(_config(workspace_dir), company, filename, content)
 
 
 @mcp.tool()
@@ -106,6 +107,19 @@ async def save_job_posting(
 
 
 @mcp.tool()
+async def compile_resume(
+    company: str | None = None, workspace_dir: str | None = None
+) -> str:
+    """Compile resume.tex using lualatex. Compiles in a company directory, or the
+    workspace root if no company is specified.
+
+    Args:
+        company: Company name (optional — omit to compile the base resume)
+    """
+    return await workspace.compile_resume(_config(workspace_dir), company)
+
+
+@mcp.tool()
 def mock_interview(
     company: str,
     interview_type: str = "behavioral",
@@ -114,8 +128,7 @@ def mock_interview(
     """Start a mock interview session. Returns a briefing with all application materials,
     your profile, and interviewer guidance so Claude can play the interviewer role.
 
-    After the session, save feedback and areas to improve using save_application_file
-    with file_type="interview_prep".
+    After the session, save feedback and areas to improve using save_application_file.
 
     Args:
         company: Company name

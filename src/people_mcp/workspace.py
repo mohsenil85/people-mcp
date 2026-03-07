@@ -1,20 +1,18 @@
 """Domain logic: filesystem operations and HTTP fetching for job application workspace."""
 
+import asyncio
 import os
 import re
 from dataclasses import dataclass
-from importlib import resources
 from pathlib import Path
 
 import httpx
 
-VALID_FILES = frozenset({
-    "job_posting",
-    "company_research",
-    "strategy",
-    "interview_prep",
-    "notes",
-})
+# Binary/build artifacts to skip in listings
+SKIP_EXTENSIONS = frozenset({".aux", ".log", ".out", ".pdf", ".gz", ".fls", ".fdb_latexmk"})
+
+# Text file extensions to read in get_application / mock_interview_briefing
+TEXT_EXTENSIONS = frozenset({".md", ".tex", ".txt"})
 
 
 class WorkspaceError(Exception):
@@ -42,68 +40,79 @@ def _sanitize_company(name: str) -> str:
     return name.strip("-")
 
 
-def _validate_file_type(file_type: str) -> None:
-    if file_type not in VALID_FILES:
-        raise WorkspaceError(
-            f"Invalid file type: {file_type}. Must be one of: {', '.join(sorted(VALID_FILES))}"
-        )
+def _validate_filename(filename: str) -> None:
+    """Reject path traversal and absolute paths."""
+    if not filename:
+        raise WorkspaceError("Filename cannot be empty")
+    if "/" in filename or "\\" in filename:
+        raise WorkspaceError(f"Invalid filename (no path separators allowed): {filename}")
+    if filename.startswith("."):
+        raise WorkspaceError(f"Invalid filename (no dotfiles): {filename}")
+    if ".." in filename:
+        raise WorkspaceError(f"Invalid filename (no path traversal): {filename}")
 
 
-def get_profile() -> str:
-    """Return the bundled professional profile."""
-    return resources.files("people_mcp").joinpath("profile.md").read_text()
+def get_profile(config: WorkspaceConfig) -> str:
+    """Read the base resume.tex from the workspace root as the professional profile."""
+    resume_path = config.workspace_dir / "resume.tex"
+    if not resume_path.exists():
+        raise WorkspaceError(f"No resume.tex found at workspace root: {config.workspace_dir}")
+    return resume_path.read_text()
 
 
 def list_applications(config: WorkspaceConfig) -> list[dict]:
-    """List all application directories with their file status."""
+    """List all application directories with their files."""
     workspace = config.workspace_dir
     if not workspace.exists():
         return []
 
     applications = []
     for entry in sorted(workspace.iterdir()):
-        if not entry.is_dir():
+        if not entry.is_dir() or entry.name.startswith("."):
             continue
-        files = [f.stem for f in entry.iterdir() if f.is_file() and f.suffix == ".md"]
+        files = [
+            f.name for f in sorted(entry.iterdir())
+            if f.is_file() and f.suffix not in SKIP_EXTENSIONS
+        ]
         applications.append({
             "company": entry.name,
-            "files": sorted(files),
+            "files": files,
         })
     return applications
 
 
 def get_application(config: WorkspaceConfig, company: str) -> dict:
-    """Get all content for one application."""
+    """Get all text file content for one application."""
     company_dir = config.workspace_dir / _sanitize_company(company)
     if not company_dir.exists():
         raise WorkspaceError(f"No application found for: {company}")
 
     content = {}
     for f in sorted(company_dir.iterdir()):
-        if f.is_file() and f.suffix == ".md":
-            content[f.stem] = f.read_text()
+        if f.is_file() and f.suffix in TEXT_EXTENSIONS:
+            content[f.name] = f.read_text()
     return {"company": company_dir.name, "files": content}
 
 
-def read_application_file(config: WorkspaceConfig, company: str, file_type: str) -> str:
+def read_application_file(config: WorkspaceConfig, company: str, filename: str) -> str:
     """Read a single file from an application directory."""
-    _validate_file_type(file_type)
-    file_path = config.workspace_dir / _sanitize_company(company) / f"{file_type}.md"
+    _validate_filename(filename)
+    file_path = config.workspace_dir / _sanitize_company(company) / filename
     if not file_path.exists():
-        raise WorkspaceError(f"File not found: {file_type} for {company}")
+        raise WorkspaceError(f"File not found: {filename} for {company}")
     return file_path.read_text()
 
 
 def save_application_file(
-    config: WorkspaceConfig, company: str, file_type: str, content: str
+    config: WorkspaceConfig, company: str, filename: str, content: str
 ) -> str:
     """Save or update a file in an application directory."""
-    _validate_file_type(file_type)
+    _validate_filename(filename)
     company_dir = config.workspace_dir / _sanitize_company(company)
     company_dir.mkdir(parents=True, exist_ok=True)
-    file_path = company_dir / f"{file_type}.md"
+    file_path = company_dir / filename
     file_path.write_text(content)
-    return f"Saved {file_type}.md for {company_dir.name}"
+    return f"Saved {filename} for {company_dir.name}"
 
 
 def delete_application(config: WorkspaceConfig, company: str) -> str:
@@ -163,7 +172,40 @@ async def save_job_posting(
     else:
         raise WorkspaceError("Must provide either url or content")
 
-    return save_application_file(config, company, "job_posting", text)
+    return save_application_file(config, company, "job_posting.md", text)
+
+
+async def compile_resume(config: WorkspaceConfig, company: str | None = None) -> str:
+    """Run lualatex to compile resume.tex in a company directory (or workspace root)."""
+    if company:
+        target_dir = config.workspace_dir / _sanitize_company(company)
+        if not target_dir.exists():
+            raise WorkspaceError(f"No application found for: {company}")
+    else:
+        target_dir = config.workspace_dir
+
+    tex_file = target_dir / "resume.tex"
+    if not tex_file.exists():
+        raise WorkspaceError(f"No resume.tex found in: {target_dir}")
+
+    proc = await asyncio.create_subprocess_exec(
+        "lualatex", "-interaction=nonstopmode", "resume.tex",
+        cwd=target_dir,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await proc.communicate()
+
+    output = stdout.decode(errors="replace")
+    errors = stderr.decode(errors="replace")
+    pdf_path = target_dir / "resume.pdf"
+
+    if proc.returncode != 0:
+        raise WorkspaceError(
+            f"lualatex failed (exit {proc.returncode}):\n{output}\n{errors}"
+        )
+
+    return f"Compiled successfully: {pdf_path}\n\n{output}"
 
 
 INTERVIEW_TYPES = {
@@ -224,13 +266,13 @@ def mock_interview_briefing(
     if not company_dir.exists():
         raise WorkspaceError(f"No application found for: {company}")
 
-    # Gather available materials
+    # Gather all text materials
     materials = {}
     for f in sorted(company_dir.iterdir()):
-        if f.is_file() and f.suffix == ".md":
-            materials[f.stem] = f.read_text()
+        if f.is_file() and f.suffix in TEXT_EXTENSIONS:
+            materials[f.name] = f.read_text()
 
-    if "job_posting" not in materials:
+    if not any("job_posting" in name for name in materials):
         raise WorkspaceError(
             f"No job posting found for {company}. Save one first with save_job_posting."
         )
@@ -242,6 +284,6 @@ def mock_interview_briefing(
         "interview_description": interview["description"],
         "interviewer_guidance": interview["guidance"],
         "company": company_dir.name,
-        "profile": get_profile(),
+        "profile": get_profile(config),
         "materials": materials,
     }

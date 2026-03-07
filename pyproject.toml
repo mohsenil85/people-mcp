@@ -13,10 +13,23 @@ test = [
     "pytest>=8.0",
     "pytest-asyncio>=0.25",
 ]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.25",
+    "pyright>=1.1.390",
+]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.pyright]
+pythonVersion = "3.14"
+include = ["src"]
+typeCheckingMode = "basic"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [project.scripts]
 people-mcp = "people_mcp.server:main"

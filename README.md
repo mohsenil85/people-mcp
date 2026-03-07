@@ -1,5 +1,10 @@
 # people-mcp
 
+[![CI](https://github.com/mohsenil85/people-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/mohsenil85/people-mcp/actions/workflows/ci.yml)
+[![pyright: strict](https://img.shields.io/badge/pyright-strict-blue)](https://microsoft.github.io/pyright/)
+[![Python 3.14+](https://img.shields.io/badge/python-3.14+-blue)](https://docs.python.org/3.14/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 MCP server for managing job application materials. Reads your resume from the workspace, fetches job postings and company info, compiles LaTeX resumes, and persists research, strategies, and interview prep per company. The host Claude does all reasoning — this server handles data access and persistence.
 
 ## Quickstart

@@ -5,3 +5,11 @@ __pycache__/
 dist/
 build/
 .env
+.pytest_cache/
+*.aux
+*.log
+*.out
+*.pdf
+*.gz
+*.fls
+*.fdb_latexmk

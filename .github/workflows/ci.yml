@@ -18,4 +18,4 @@ jobs:
           allow-prereleases: true
       - run: uv sync --extra dev
       - run: uv run pyright
-      - run: uv run pytest tests/ -v
+      - run: uv run pytest tests/ -v --cov --cov-report=term-missing

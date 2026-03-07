@@ -3,6 +3,9 @@ name = "people-mcp"
 version = "0.1.0"
 description = "MCP server for job application workspace management"
 requires-python = ">=3.14"
+license = "MIT"
+authors = [{name = "Logan Mohseni"}]
+readme = "README.md"
 dependencies = [
     "mcp[cli]>=1.26.0",
     "httpx>=0.27.0",
@@ -18,6 +21,11 @@ dev = [
     "pytest-asyncio>=0.25",
     "pyright>=1.1.390",
 ]
+
+[project.urls]
+Homepage = "https://github.com/mohsenil85/people-mcp"
+Repository = "https://github.com/mohsenil85/people-mcp"
+Issues = "https://github.com/mohsenil85/people-mcp/issues"
 
 [build-system]
 requires = ["hatchling"]

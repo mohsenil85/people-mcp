@@ -1,5 +1,5 @@
 [project]
-name = "people-mcp"
+name = "jobkit-mcp"
 version = "0.1.0"
 description = "MCP server for job application workspace management"
 requires-python = ">=3.14"
@@ -25,9 +25,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/mohsenil85/people-mcp"
-Repository = "https://github.com/mohsenil85/people-mcp"
-Issues = "https://github.com/mohsenil85/people-mcp/issues"
+Homepage = "https://github.com/mohsenil85/jobkit-mcp"
+Repository = "https://github.com/mohsenil85/jobkit-mcp"
+Issues = "https://github.com/mohsenil85/jobkit-mcp/issues"
 
 [build-system]
 requires = ["hatchling"]
@@ -39,8 +39,8 @@ include = ["src"]
 typeCheckingMode = "strict"
 
 [tool.coverage.run]
-source = ["people_mcp"]
-omit = ["src/people_mcp/server.py"]
+source = ["jobkit_mcp"]
+omit = ["src/jobkit_mcp/server.py"]
 
 [tool.coverage.report]
 show_missing = true
@@ -50,4 +50,4 @@ fail_under = 90
 asyncio_mode = "auto"
 
 [project.scripts]
-people-mcp = "people_mcp.server:main"
+jobkit-mcp = "jobkit_mcp.server:main"

@@ -4,9 +4,9 @@ from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
-from people_mcp import workspace
+from jobkit_mcp import workspace
 
-mcp = FastMCP("people")
+mcp = FastMCP("jobkit")
 
 
 def _config(workspace_dir: str | None = None) -> workspace.WorkspaceConfig:

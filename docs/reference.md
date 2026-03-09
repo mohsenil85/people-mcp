@@ -1,15 +1,15 @@
 # Reference
 
-Complete, authoritative reference for people-mcp.
+Complete, authoritative reference for jobkit-mcp.
 
 ## Configuration
 
-### `PEOPLE_WORKSPACE` environment variable
+### `JOBKIT_WORKSPACE` environment variable
 
 The workspace root directory. Must be set unless every tool call provides `workspace_dir`.
 
 ```bash
-export PEOPLE_WORKSPACE=~/Projects/resume
+export JOBKIT_WORKSPACE=~/Projects/resume
 ```
 
 ### `WorkspaceConfig`
@@ -23,12 +23,12 @@ class WorkspaceConfig:
 
     @classmethod
     def from_env(cls) -> "WorkspaceConfig":
-        # Reads PEOPLE_WORKSPACE; raises WorkspaceError if unset
+        # Reads JOBKIT_WORKSPACE; raises WorkspaceError if unset
 ```
 
 ### `workspace_dir` override
 
-Every tool accepts an optional `workspace_dir: str | None` parameter. When provided, it overrides `PEOPLE_WORKSPACE` for that call only.
+Every tool accepts an optional `workspace_dir: str | None` parameter. When provided, it overrides `JOBKIT_WORKSPACE` for that call only.
 
 ---
 
@@ -150,7 +150,7 @@ Fetch a URL and return text content with HTML stripped.
 
 **Details:**
 - Uses `httpx.AsyncClient` with `follow_redirects=True` and `timeout=30.0`
-- User-Agent: `people-mcp/0.1.0`
+- User-Agent: `jobkit-mcp/0.1.0`
 - HTML stripping via `_html_to_text` (see [Internals](#html-stripping))
 
 ---
@@ -225,7 +225,7 @@ Start a mock interview session. Returns a briefing for Claude to play interviewe
 ## Workspace Layout
 
 ```
-$PEOPLE_WORKSPACE/
+$JOBKIT_WORKSPACE/
 ├── resume.tex              # Base resume (read by get_profile)
 ├── coverletter.txt         # Base cover letter (optional)
 ├── META.md                 # Base strategy (optional)
@@ -341,7 +341,7 @@ Each type provides a `description` (shown in the briefing) and `guidance` (instr
 `fetch_url` uses `httpx.AsyncClient` with:
 - `follow_redirects=True`
 - `timeout=30.0` seconds
-- `User-Agent: people-mcp/0.1.0`
+- `User-Agent: jobkit-mcp/0.1.0`
 - HTML auto-detected via `content-type` header
 
 ### LaTeX Compilation

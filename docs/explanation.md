@@ -1,10 +1,10 @@
 # Explanation
 
-Design decisions and architecture behind people-mcp.
+Design decisions and architecture behind jobkit-mcp.
 
 ## Architecture: Claude reasons, server persists
 
-people-mcp follows the MCP pattern strictly: the server is a dumb data layer, and all intelligence lives in the host (Claude).
+jobkit-mcp follows the MCP pattern strictly: the server is a dumb data layer, and all intelligence lives in the host (Claude).
 
 The server never decides *what* to write — it only handles *where* and *how*. Claude reads the job posting, reasons about how to tailor a resume, and sends the finished content to `save_application_file`. The server writes it to disk.
 
@@ -16,7 +16,7 @@ The `mock_interview` tool is the most interesting case: it doesn't *run* an inte
 
 ### Why flat company directories
 
-Each company gets one directory: `$PEOPLE_WORKSPACE/stripe/`, `$PEOPLE_WORKSPACE/anthropic/`, etc. No nesting, no hierarchy.
+Each company gets one directory: `$JOBKIT_WORKSPACE/stripe/`, `$JOBKIT_WORKSPACE/anthropic/`, etc. No nesting, no hierarchy.
 
 This keeps the mental model simple: one company, one folder. `list_applications` scans one level deep. There's no need for a database, no config file tracking which directory maps to which company. The directory name *is* the identifier.
 
@@ -68,7 +68,7 @@ There's no user-controlled path concatenation or string interpolation.
 
 The profile is read from `resume.tex` at the workspace root — not from a config file, not from a database, not bundled with the server.
 
-Why: your resume is your single source of truth. It already has your skills, experience, and education in a structured format. Reading it directly means people-mcp always has the current version. No sync issues, no "remember to update your profile" step.
+Why: your resume is your single source of truth. It already has your skills, experience, and education in a structured format. Reading it directly means jobkit-mcp always has the current version. No sync issues, no "remember to update your profile" step.
 
 LaTeX format specifically because this is a tool for people who maintain LaTeX resumes. Claude reads LaTeX fluently — the markup doesn't impede comprehension and actually provides structural hints (sections, itemize environments, etc.).
 

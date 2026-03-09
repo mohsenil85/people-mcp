@@ -1,11 +1,11 @@
-"""Tests for people_mcp.workspace."""
+"""Tests for jobkit_mcp.workspace."""
 
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from people_mcp.workspace import (
+from jobkit_mcp.workspace import (
     WorkspaceConfig,
     WorkspaceError,
     _html_to_text,
@@ -226,7 +226,7 @@ class TestSaveJobPosting:
 
     @pytest.mark.asyncio
     async def test_with_url(self, workspace):
-        with patch("people_mcp.workspace.fetch_url", new_callable=AsyncMock) as mock_fetch:
+        with patch("jobkit_mcp.workspace.fetch_url", new_callable=AsyncMock) as mock_fetch:
             mock_fetch.return_value = "fetched job posting"
             result = await save_job_posting(workspace, "acme", url="https://example.com/job")
             mock_fetch.assert_called_once_with("https://example.com/job")
@@ -342,11 +342,11 @@ class TestMockInterviewBriefing:
 
 class TestWorkspaceConfigFromEnv:
     def test_reads_env(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("PEOPLE_WORKSPACE", str(tmp_path))
+        monkeypatch.setenv("JOBKIT_WORKSPACE", str(tmp_path))
         config = WorkspaceConfig.from_env()
         assert config.workspace_dir == tmp_path
 
     def test_missing_env(self, monkeypatch):
-        monkeypatch.delenv("PEOPLE_WORKSPACE", raising=False)
-        with pytest.raises(WorkspaceError, match="PEOPLE_WORKSPACE"):
+        monkeypatch.delenv("JOBKIT_WORKSPACE", raising=False)
+        with pytest.raises(WorkspaceError, match="JOBKIT_WORKSPACE"):
             WorkspaceConfig.from_env()

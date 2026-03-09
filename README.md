@@ -1,6 +1,6 @@
-# people-mcp
+# jobkit-mcp
 
-[![CI](https://github.com/mohsenil85/people-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/mohsenil85/people-mcp/actions/workflows/ci.yml)
+[![CI](https://github.com/mohsenil85/jobkit-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/mohsenil85/jobkit-mcp/actions/workflows/ci.yml)
 [![pyright: strict](https://img.shields.io/badge/pyright-strict-blue)](https://microsoft.github.io/pyright/)
 [![Python 3.14+](https://img.shields.io/badge/python-3.14+-blue)](https://docs.python.org/3.14/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -13,7 +13,7 @@ Requires Python 3.14+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
 git clone <repo-url>
-cd people-mcp
+cd jobkit-mcp
 uv sync
 ```
 
@@ -24,9 +24,9 @@ Add to `~/.claude/settings.json`:
   "mcpServers": {
     "people": {
       "command": "uv",
-      "args": ["run", "--directory", "/path/to/people-mcp", "people-mcp"],
+      "args": ["run", "--directory", "/path/to/jobkit-mcp", "jobkit-mcp"],
       "env": {
-        "PEOPLE_WORKSPACE": "/Users/you/Projects/resume"
+        "JOBKIT_WORKSPACE": "/Users/you/Projects/resume"
       }
     }
   }
@@ -51,7 +51,7 @@ Add to `~/.claude/settings.json`:
 ## Workspace Layout
 
 ```
-$PEOPLE_WORKSPACE/
+$JOBKIT_WORKSPACE/
 ├── resume.tex              # Base resume (used by get_profile)
 ├── coverletter.txt         # Base cover letter
 ├── META.md                 # Base strategy

@@ -2,7 +2,7 @@
 
 Focused recipes for common tasks. Each guide is self-contained.
 
-## Configure people-mcp with Claude Code
+## Configure jobkit-mcp with Claude Code
 
 Add to `~/.claude/settings.json`:
 
@@ -11,9 +11,9 @@ Add to `~/.claude/settings.json`:
   "mcpServers": {
     "people": {
       "command": "uv",
-      "args": ["run", "--directory", "/path/to/people-mcp", "people-mcp"],
+      "args": ["run", "--directory", "/path/to/jobkit-mcp", "jobkit-mcp"],
       "env": {
-        "PEOPLE_WORKSPACE": "/Users/you/Projects/resume"
+        "JOBKIT_WORKSPACE": "/Users/you/Projects/resume"
       }
     }
   }
@@ -22,10 +22,10 @@ Add to `~/.claude/settings.json`:
 
 Replace both paths with your actual directories. Restart Claude Code after saving.
 
-## Configure people-mcp with MCP Inspector
+## Configure jobkit-mcp with MCP Inspector
 
 ```bash
-PEOPLE_WORKSPACE=~/Projects/resume uv run mcp dev src/people_mcp/server.py
+JOBKIT_WORKSPACE=~/Projects/resume uv run mcp dev src/jobkit_mcp/server.py
 ```
 
 This opens the MCP Inspector UI where you can call tools directly and inspect responses.
@@ -87,7 +87,7 @@ Runs `lualatex` in the `anthropic/` directory. The output PDF lands at `anthropi
 compile_resume()
 ```
 
-Runs `lualatex` in the workspace root. Output: `$PEOPLE_WORKSPACE/resume.pdf`.
+Runs `lualatex` in the workspace root. Output: `$JOBKIT_WORKSPACE/resume.pdf`.
 
 ### Fix compilation errors
 
@@ -199,10 +199,10 @@ Removes the entire company directory and all files. This is irreversible.
 
 ## Use a custom workspace directory
 
-Every tool accepts an optional `workspace_dir` parameter that overrides `PEOPLE_WORKSPACE` for that single call.
+Every tool accepts an optional `workspace_dir` parameter that overrides `JOBKIT_WORKSPACE` for that single call.
 
 > Read my profile from ~/Projects/alt-resume.
 
 Claude calls `get_profile(workspace_dir="~/Projects/alt-resume")`.
 
-This is useful if you maintain multiple workspace directories (e.g., one per field or resume variant). The override applies only to that one tool call — subsequent calls still use `PEOPLE_WORKSPACE`.
+This is useful if you maintain multiple workspace directories (e.g., one per field or resume variant). The override applies only to that one tool call — subsequent calls still use `JOBKIT_WORKSPACE`.

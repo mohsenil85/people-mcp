@@ -46,9 +46,9 @@ class WorkspaceConfig:
 
     @classmethod
     def from_env(cls) -> "WorkspaceConfig":
-        workspace = os.environ.get("PEOPLE_WORKSPACE")
+        workspace = os.environ.get("JOBKIT_WORKSPACE")
         if not workspace:
-            raise WorkspaceError("PEOPLE_WORKSPACE environment variable is not set")
+            raise WorkspaceError("JOBKIT_WORKSPACE environment variable is not set")
         return cls(workspace_dir=Path(workspace))
 
 
@@ -169,7 +169,7 @@ async def fetch_url(url: str) -> str:
     async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
         response = await client.get(
             url,
-            headers={"User-Agent": "people-mcp/0.1.0"},
+            headers={"User-Agent": "jobkit-mcp/0.1.0"},
         )
         response.raise_for_status()
 

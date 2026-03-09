@@ -1,6 +1,6 @@
 """MCP server for job application workspace management."""
 
-from people_mcp.workspace import (
+from jobkit_mcp.workspace import (
     ApplicationDetail,
     ApplicationSummary,
     InterviewBriefing,

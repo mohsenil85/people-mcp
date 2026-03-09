@@ -1,4 +1,4 @@
-# Tutorial: Your First Job Application with people-mcp
+# Tutorial: Your First Job Application with jobkit-mcp
 
 This tutorial walks you through a complete job application workflow — from installation to interview prep. By the end, you'll have saved a job posting, tailored a resume, run a mock interview, and cleaned up.
 
@@ -18,33 +18,33 @@ Clone the repository and install dependencies:
 
 ```bash
 git clone <repo-url>
-cd people-mcp
+cd jobkit-mcp
 uv sync
 ```
 
-Add people-mcp to your Claude Code MCP config (`~/.claude/settings.json`):
+Add jobkit-mcp to your Claude Code MCP config (`~/.claude/settings.json`):
 
 ```json
 {
   "mcpServers": {
     "people": {
       "command": "uv",
-      "args": ["run", "--directory", "/path/to/people-mcp", "people-mcp"],
+      "args": ["run", "--directory", "/path/to/jobkit-mcp", "jobkit-mcp"],
       "env": {
-        "PEOPLE_WORKSPACE": "/Users/you/Projects/resume"
+        "JOBKIT_WORKSPACE": "/Users/you/Projects/resume"
       }
     }
   }
 }
 ```
 
-Set `PEOPLE_WORKSPACE` to a directory containing your base `resume.tex`. This is your workspace root — people-mcp reads your profile from here and creates company subdirectories for each application.
+Set `JOBKIT_WORKSPACE` to a directory containing your base `resume.tex`. This is your workspace root — jobkit-mcp reads your profile from here and creates company subdirectories for each application.
 
 Restart Claude Code to pick up the new server.
 
 ## Step 2: Verify your profile
 
-Let's confirm people-mcp can read your resume.
+Let's confirm jobkit-mcp can read your resume.
 
 **You say:**
 > Read my professional profile.
@@ -64,7 +64,7 @@ You've found a role at Stripe. Let's save the posting.
 1. Sanitizes "Stripe" → `stripe`
 2. Fetches the URL with httpx
 3. Strips HTML tags from the response
-4. Creates `$PEOPLE_WORKSPACE/stripe/` if it doesn't exist
+4. Creates `$JOBKIT_WORKSPACE/stripe/` if it doesn't exist
 5. Writes the text to `stripe/job_posting.md`
 
 **What comes back:** `"Saved job_posting.md for stripe"`

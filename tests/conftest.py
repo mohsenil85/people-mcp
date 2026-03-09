@@ -1,6 +1,6 @@
 import pytest
 
-from people_mcp.workspace import WorkspaceConfig
+from jobkit_mcp.workspace import WorkspaceConfig
 
 
 @pytest.fixture
